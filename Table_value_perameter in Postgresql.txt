@@ -1,0 +1,70 @@
+
+
+CREATE TYPE TY_APP_USER AS OBJECT
+(
+  aur_id                 INT
+, aur_username           VARCHAR2(30  CHAR)
+, aur_is_account_enabled VARCHAR2(1   CHAR)
+, aur_created_date       DATE
+, aur_updated_date       TIMESTAMP
+)
+
+/
+--
+-- Create a data type which can store many instances of a single 'TY_APP_USER' 
+-- [essentially this is a table valued data type]. An instance of this data type can be
+-- created and populated by the client application [a java based one in my case].
+--
+-- I can't find any reference to something 
+-- similar to this using postgreSQL.
+
+
+
+CREATE TYPE TTY_APP_USER AS TABLE OF TY_APP_USER
+/
+
+--
+-- Next define a stored procedure which can accept an instance of a TTY_APP_USER data
+-- type, and treat that instance as a table, for example ...
+--
+
+
+
+CREATE OR REPLACE PROCEDURE prAddUsers
+(
+  p_in_users IN tty_app_user
+)
+IS
+BEGIN
+
+
+
+  INSERT
+    INTO
+         users
+       (
+         aur_id
+       , aur_username
+       , aur_is_account_enabled
+       , aur_created_by
+       , aur_created_date
+       )
+  SELECT
+         aur_id
+       , aur_username
+       , aur_is_account_enabled
+       , aur_created_by
+       , aur_created_date
+    FROM
+         TABLE
+         (
+           CAST
+           (
+             p_in_users AS tty_app_user
+           )
+         );
+
+
+
+END prUpdateUsers;
+
